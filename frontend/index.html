@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Lost & Found - Home</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <a href="index.html">Lost & Found</a>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="index.html" class="active">Home</a></li>
+                <li><a href="report.html" class="report-btn">+ Report Item</a></li>
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="admin.html" id="adminLink" style="display: none;">👑 Admin Panel</a></li>
+                <li><a href="#" onclick="logout()" class="logout-btn">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <header>
+        <h1>Lost & Found</h1>
+        <p>Helping people find their belongings</p>
+    </header>
+
+    <main>
+        <section class="list-section">
+            <h2>Reported Items</h2>
+            
+            <!-- Search/Filter Bar -->
+            <div class="search-container">
+                <input type="text" id="searchInput" placeholder="Search items...">
+                <select id="categoryFilter">
+                    <option value="">All Categories</option>
+                    <option value="Electronics">Electronics</option>
+                    <option value="Documents">Documents</option>
+                    <option value="Clothing">Clothing</option>
+                    <option value="Accessories">Accessories</option>
+                    <option value="Books">Books</option>
+                    <option value="Wallet/Purse">Wallet/Purse</option>
+                    <option value="Keys">Keys</option>
+                    <option value="Jewelry">Jewelry</option>
+                    <option value="Bag/Backpack">Bag/Backpack</option>
+                    <option value="Other">Other</option>
+                </select>
+                <button onclick="filterItems()">Search</button>
+            </div>
+            
+            <div id="itemList" class="items-container">
+                <!-- Items will appear here from script.js -->
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <h3>Lost & Found 4th Semester</h3>
+            <div class="footer-names">
+                <span>KRITAGYA BANIYA</span>
+                <span>THAMAN CHHETRI</span>
+            </div>
+            <p>© 2026 Lost & Found. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script src="auth.js"></script>
+
+    <script>
+        // Check if user is logged in
+        if (localStorage.getItem("logged") !== "true") {
+            window.location.href = "login.html";
+        }
+        
+        // Load items when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadItems();
+        });
+        
+        // Simple filter function
+        function filterItems() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const category = document.getElementById('categoryFilter').value;
+            
+            const items = document.querySelectorAll('.item-card');
+            items.forEach(item => {
+                const title = item.querySelector('h3')?.textContent.toLowerCase() || '';
+                const itemCategory = item.querySelector('p strong')?.nextSibling?.textContent || '';
+                
+                let show = true;
+                if (searchTerm && !title.includes(searchTerm)) show = false;
+                if (category && !itemCategory.includes(category)) show = false;
+                
+                item.style.display = show ? 'block' : 'none';
+            });
+        }
+
+        function toggleView() {
+            const container = document.getElementById('itemList');
+            container.classList.toggle('grid-view');
+        }
+        document.getElementById('itemList').classList.add('grid-view');
+        
+        // NEW: Show admin link if user is admin
+        document.addEventListener('DOMContentLoaded', function() {
+            const isAdmin = localStorage.getItem('is_admin') === '1';
+            const adminLink = document.getElementById('adminLink');
+            
+            if (adminLink && isAdmin) {
+                adminLink.style.display = 'block';
+                console.log('👑 Admin link displayed');
+            }
+        });
+    </script>
+</body>
+</html>

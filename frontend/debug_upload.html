@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Image Upload</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        .success { color: green; }
+        .error { color: red; }
+        pre { background: #f4f4f4; padding: 10px; border: 1px solid #ccc; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        input, select { padding: 8px; margin: 5px; width: 300px; display: block; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Debug Image Upload</h1>
+    
+    <div id="status"></div>
+    
+    <h3>Test Form</h3>
+    <form id="debugForm">
+        <input type="text" id="itemName" placeholder="Item Name" value="Debug Item">
+        <select id="category">
+            <option value="Electronics">Electronics</option>
+        </select>
+        <input type="text" id="location" placeholder="Location" value="Debug Location">
+        <input type="text" id="contactName" placeholder="Contact Name" value="Debug User">
+        <input type="email" id="contactEmail" placeholder="Contact Email" value="debug@test.com">
+        <input type="date" id="date">
+        <input type="time" id="time" value="12:00">
+        <select id="type">
+            <option value="Lost">Lost</option>
+        </select>
+        <input type="file" id="image" accept="image/*">
+    </form>
+    
+    <button onclick="testWithoutImage()">Test Without Image</button>
+    <button onclick="testWithImage()">Test With Image</button>
+    
+    <h3>Server Response:</h3>
+    <pre id="response">Click a button to test...</pre>
+    
+    <script>
+    // Set today's date
+    document.getElementById('date').value = new Date().toISOString().split('T')[0];
+    
+    async function testWithoutImage() {
+        await submitForm(false);
+    }
+    
+    async function testWithImage() {
+        await submitForm(true);
+    }
+    
+    async function submitForm(includeImage) {
+        const formData = new FormData();
+        
+        formData.append('item_name', document.getElementById('itemName').value);
+        formData.append('category', document.getElementById('category').value);
+        formData.append('location', document.getElementById('location').value);
+        formData.append('item_date', document.getElementById('date').value);
+        formData.append('item_time', document.getElementById('time').value);
+        formData.append('type', document.getElementById('type').value);
+        formData.append('user_id', localStorage.getItem('user_id') || '1');
+        formData.append('username', localStorage.getItem('username') || 'Debug');
+        formData.append('contact_name', document.getElementById('contactName').value);
+        formData.append('contact_email', document.getElementById('contactEmail').value);
+        formData.append('contact_phone', '');
+        formData.append('contact_note', '');
+        
+        if (includeImage) {
+            const imageFile = document.getElementById('image').files[0];
+            if (!imageFile) {
+                alert('Please select an image first');
+                return;
+            }
+            formData.append('image', imageFile);
+        }
+        
+        document.getElementById('response').textContent = 'Sending request...';
+        
+        try {
+            const response = await fetch('http://localhost/lost-and-found/backend/add_item.php', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const responseText = await response.text();
+            
+            let output = `Status: ${response.status} ${response.statusText}\n\n`;
+            output += `Raw Response:\n${responseText}\n\n`;
+            
+            try {
+                const jsonData = JSON.parse(responseText);
+                output += `✅ Valid JSON!\n`;
+                output += `Success: ${jsonData.success}\n`;
+                output += `Message: ${jsonData.message}`;
+            } catch (e) {
+                output += `❌ Invalid JSON: ${e.message}`;
+            }
+            
+            document.getElementById('response').textContent = output;
+            
+        } catch (error) {
+            document.getElementById('response').textContent = 'Error: ' + error.message;
+        }
+    }
+    </script>
+</body>
+</html>

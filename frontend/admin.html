@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard | Lost & Found</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .admin-container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        
+        .admin-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .user-table {
+            width: 100%;
+            background: white;
+            border-radius: 10px;
+            overflow-x: auto;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .user-table th {
+            background: #f7fafc;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #4a5568;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        
+        .user-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .user-table tr:hover {
+            background: #f7fafc;
+        }
+        
+        .delete-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .delete-btn:hover {
+            background: #dc2626;
+        }
+        
+        .admin-badge {
+            background: #fbbf24;
+            color: #92400e;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+            display: inline-block;
+        }
+        
+        .user-badge {
+            background: #e2e8f0;
+            color: #4a5568;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+            display: inline-block;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #718096;
+        }
+        
+        .error {
+            color: #dc2626;
+            padding: 20px;
+            text-align: center;
+            background: #fee2e2;
+            border-radius: 10px;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            color: #718096;
+            margin-top: 5px;
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #667eea;
+            text-decoration: none;
+        }
+        
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <a href="index.html">Lost & Found</a>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="report.html" class="report-btn">+ Report Item</a></li>
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="admin.html" class="active" style="background: rgba(255,255,255,0.2);">Admin</a></li>
+                <li><a href="#" onclick="logout()" class="logout-btn">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="admin-container">
+        <a href="index.html" class="back-link">← Back to Home</a>
+        
+        <div class="admin-header">
+            <h1>👑 Admin Dashboard</h1>
+            <p>Welcome, <span id="adminName"></span>! Manage users below.</p>
+        </div>
+        
+        <div class="stats" id="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="totalUsers">-</div>
+                <div class="stat-label">Total Users</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="adminCount">-</div>
+                <div class="stat-label">Admins</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="regularUsers">-</div>
+                <div class="stat-label">Regular Users</div>
+            </div>
+        </div>
+        
+        <h2>User Management</h2>
+        <div id="userList">
+            <div class="loading">Loading users...</div>
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+    <script>
+        // Get user info from localStorage
+        var loggedIn = localStorage.getItem('logged');
+        var isAdmin = localStorage.getItem('is_admin');
+        var username = localStorage.getItem('username');
+        var userId = localStorage.getItem('user_id');
+        
+        console.log('Logged in:', loggedIn);
+        console.log('is_admin:', isAdmin);
+        console.log('Username:', username);
+        console.log('User ID:', userId);
+        
+        // Show admin name
+        document.getElementById('adminName').textContent = username || 'Admin';
+        
+        // Check if logged in
+        if (loggedIn !== 'true') {
+            alert('Please login first');
+            window.location.href = 'login.html';
+        }
+        
+        // Check if admin
+        if (isAdmin !== '1') {
+            alert('Admin access required. You do not have permission.');
+            window.location.href = 'index.html';
+        }
+        
+        console.log('Admin access granted! Loading users...');
+        
+        // Function to load users
+        function loadUsers() {
+            var userListDiv = document.getElementById('userList');
+            userListDiv.innerHTML = '<div class="loading">Loading users...</div>';
+            
+            var apiUrl = 'http://localhost/lost-and-found/backend/admin_users.php?action=list&user_id=' + userId;
+            console.log('Fetching:', apiUrl);
+            
+            fetch(apiUrl)
+                .then(function(response) {
+                    console.log('Response status:', response.status);
+                    return response.json();
+                })
+                .then(function(data) {
+                    console.log('Users data:', data);
+                    
+                    if (!data.success) {
+                        userListDiv.innerHTML = '<div class="error">❌ Error: ' + data.message + '</div>';
+                        return;
+                    }
+                    
+                    var users = data.users;
+                    console.log('Number of users:', users.length);
+                    
+                    // Update stats
+                    var totalUsers = users.length;
+                    var adminCount = 0;
+                    var regularCount = 0;
+                    
+                    for (var i = 0; i < users.length; i++) {
+                        if (users[i].is_admin == 1) {
+                            adminCount++;
+                        } else {
+                            regularCount++;
+                        }
+                    }
+                    
+                    document.getElementById('totalUsers').textContent = totalUsers;
+                    document.getElementById('adminCount').textContent = adminCount;
+                    document.getElementById('regularUsers').textContent = regularCount;
+                    
+                    if (users.length === 0) {
+                        userListDiv.innerHTML = '<div class="loading">No users found</div>';
+                        return;
+                    }
+                    
+                    // Create HTML table
+                    var html = '<table class="user-table">';
+                    html += '<thead><tr>';
+                    html += '<th>ID</th>';
+                    html += '<th>Username</th>';
+                    html += '<th>Email</th>';
+                    html += '<th>Role</th>';
+                    html += '<th>Action</th>';
+                    html += '</tr></thead><tbody>';
+                    
+                    for (var i = 0; i < users.length; i++) {
+                        var user = users[i];
+                        var roleBadge = '';
+                        
+                        if (user.is_admin == 1) {
+                            roleBadge = '<span class="admin-badge">👑 Admin</span>';
+                        } else {
+                            roleBadge = '<span class="user-badge">👤 User</span>';
+                        }
+                        
+                        var deleteButton = '';
+                        if (user.is_admin != 1) {
+                            deleteButton = '<button class="delete-btn" onclick="deleteUser(' + user.id + ', \'' + escapeHtml(user.username) + '\')">🗑️ Delete User</button>';
+                        } else {
+                            deleteButton = '<span style="color: #999;">Admin account</span>';
+                        }
+                        
+                        html += '<tr>';
+                        html += '<td>' + user.id + '</td>';
+                        html += '<td><strong>' + escapeHtml(user.username) + '</strong></td>';
+                        html += '<td>' + escapeHtml(user.email) + '</td>';
+                        html += '<td>' + roleBadge + '</td>';
+                        html += '<td>' + deleteButton + '</td>';
+                        html += '</tr>';
+                    }
+                    
+                    html += '</tbody></table>';
+                    userListDiv.innerHTML = html;
+                    
+                })
+                .catch(function(error) {
+                    console.error('Error loading users:', error);
+                    userListDiv.innerHTML = '<div class="error">❌ Failed to load users: ' + error.message + '</div>';
+                });
+        }
+        
+        // Delete user function
+        function deleteUser(targetUserId, targetUsername) {
+            var confirmMsg = 'Are you sure you want to delete user "' + targetUsername + '"?\n\nThis will also delete all items reported by this user.';
+            
+            if (!confirm(confirmMsg)) {
+                return;
+            }
+            
+            var apiUrl = 'http://localhost/lost-and-found/backend/admin_users.php?action=delete';
+            var postData = {
+                user_id: targetUserId,
+                admin_id: userId
+            };
+            
+            fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(postData)
+            })
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(data) {
+                console.log('Delete response:', data);
+                
+                if (data.success) {
+                    alert('✅ ' + data.message);
+                    loadUsers(); // Reload the list
+                } else {
+                    alert('❌ ' + data.message);
+                }
+            })
+            .catch(function(error) {
+                console.error('Delete error:', error);
+                alert('Failed to delete user: ' + error.message);
+            });
+        }
+        
+        // Helper function to escape HTML
+        function escapeHtml(text) {
+            if (!text) return '';
+            var div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Load users when page loads
+        loadUsers();
+    </script>
+</body>
+</html>

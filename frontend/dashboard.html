@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard | Lost & Found</title>
+    <link rel="stylesheet" href="auth.css">
+    <style>
+        .dashboard {
+            background: #ffffff;
+            width: 400px;
+            padding: 40px;
+            border-radius: 14px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            text-align: center;
+            margin: 100px auto;
+        }
+        
+        .dashboard h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        
+        .dashboard a {
+            display: block;
+            background: #667eea;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            text-decoration: none;
+            margin: 15px 0;
+            transition: 0.3s;
+        }
+        
+        .dashboard a:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+        }
+        
+        .dashboard button {
+            background: #ff4b4b;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            width: 100%;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        
+        .dashboard button:hover {
+            background: #d63a3a;
+        }
+        
+        #user {
+            color: #666;
+            margin-bottom: 20px;
+        }
+        
+        .admin-badge {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            color: #1f2937;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            display: inline-block;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="dashboard">
+    <h1>Dashboard</h1>
+    <p id="user">Welcome, <span id="username"></span>!</p>
+    <div id="adminBadge" style="display: none;"></div>
+
+    <a href="index.html">Go to Lost & Found</a>
+    <a href="admin.html" id="adminLink" style="display: none;">👑 Admin Panel</a>
+    <button onclick="logout()">Logout</button>
+</div>
+
+<script src="auth.js"></script>
+<script>
+    // Show username on dashboard
+    const username = localStorage.getItem('username') || 'User';
+    document.getElementById('username').textContent = username;
+    
+    // Check if logged in
+    if (localStorage.getItem('logged') !== 'true') {
+        window.location.href = 'login.html';
+    }
+    
+    // Show admin link and badge if user is admin
+    document.addEventListener('DOMContentLoaded', function() {
+        const isAdmin = localStorage.getItem('is_admin') === '1';
+        const adminLink = document.getElementById('adminLink');
+        const adminBadge = document.getElementById('adminBadge');
+        
+        if (isAdmin) {
+            if (adminLink) {
+                adminLink.style.display = 'block';
+            }
+            if (adminBadge) {
+                adminBadge.style.display = 'block';
+                adminBadge.innerHTML = '<div class="admin-badge">👑 Administrator</div>';
+            }
+            console.log('👑 Admin dashboard view');
+        }
+    });
+</script>
+
+</body>
+</html>

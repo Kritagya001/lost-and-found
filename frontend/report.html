@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Report Item - Lost & Found</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <a href="index.html">Lost & Found</a>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="report.html" class="active report-btn">+ Report Item</a></li>
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="admin.html" id="adminLink" style="display: none;">👑 Admin Panel</a></li>
+                <li><a href="#" onclick="logout()" class="logout-btn">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <header>
+        <h1>Report Lost / Found Item</h1>
+        <p>Help others by reporting what you've lost or found</p>
+    </header>
+
+    <main style="display: flex; justify-content: center;">
+        <section class="form-section" style="width: 100%; max-width: 800px; margin: 0 auto;">
+            <!-- Add error message container -->
+            <div id="formError" class="error-message" style="display: none;"></div>
+            
+            <form id="reportForm">
+                <input type="text" id="itemName" placeholder="Item Name" required>
+                
+                <select id="category" required>
+                    <option value="" disabled selected>Select Category</option>
+                    <option value="Electronics">Electronics</option>
+                    <option value="Documents">Documents</option>
+                    <option value="Clothing">Clothing</option>
+                    <option value="Accessories">Accessories</option>
+                    <option value="Books">Books</option>
+                    <option value="Wallet/Purse">Wallet/Purse</option>
+                    <option value="Keys">Keys</option>
+                    <option value="Jewelry">Jewelry</option>
+                    <option value="Bag/Backpack">Bag/Backpack</option>
+                    <option value="Other">Other</option>
+                </select>
+                
+                <input type="text" id="location" placeholder="Location" required>
+                
+                <div class="contact-section">
+                    <h3>Contact Information</h3>
+                    <div class="contact-fields">
+                        <input type="text" id="contactName" placeholder="Your Full Name" required>
+                        <input type="email" id="contactEmail" placeholder="Your Email Address" required>
+                        <input type="tel" id="contactPhone" placeholder="Your Phone Number (optional)">
+                        <textarea id="contactNote" placeholder="Additional contact details or notes (optional)" rows="2"></textarea>
+                    </div>
+                </div>
+                
+                <div class="datetime-container">
+                    <input type="date" id="date" required>
+                    <input type="time" id="time">
+                </div>
+                
+                <select id="type" required>
+                    <option value="Lost">Lost</option>
+                    <option value="Found">Found</option>
+                </select>
+
+                <div class="image-upload-container">
+                    <label for="itemImage">Upload Item Image (Optional)</label>
+                    <input type="file" id="itemImage" accept="image/*" onchange="previewImage(event)">
+                    <div id="imagePreview" class="image-preview"></div>
+                    <small>Max file size: 2MB. Supported formats: JPG, PNG, GIF, WEBP</small>
+                </div>
+
+                <button type="button" id="submitBtn" onclick="addItem()">Submit Report</button>
+            </form>
+            
+            <div style="text-align: center; margin-top: 20px;">
+                <a href="index.html" style="color: #667eea; text-decoration: none;">← Back to Items List</a>
+            </div>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+    <script src="auth.js"></script>
+
+    <script>
+        // Check if user is logged in
+        if (localStorage.getItem("logged") !== "true") {
+            window.location.href = "login.html";
+        }
+        
+        // Set default date to today and prevent future dates
+        document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date().toISOString().split('T')[0];
+            const dateInput = document.getElementById('date');
+            
+            if (dateInput) {
+                // Set default value to today
+                dateInput.value = today;
+                
+                // Set max attribute to today (prevents future dates in date picker)
+                dateInput.max = today;
+                
+                console.log('📅 Date limited to: ' + today);
+            }
+            
+            // Show admin link if user is admin
+            const isAdmin = localStorage.getItem('is_admin') === '1';
+            const adminLink = document.getElementById('adminLink');
+            
+            if (adminLink && isAdmin) {
+                adminLink.style.display = 'block';
+                console.log('👑 Admin link displayed');
+            }
+        });
+    </script>
+
+</body>
+</html>
